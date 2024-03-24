@@ -1,0 +1,6 @@
+matplotlib==3.*
+numpy==1.*
+pillow==10.*
+python-dotenv==1.*
+requests==2.*
+seaborn==0.*
