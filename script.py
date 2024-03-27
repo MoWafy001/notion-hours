@@ -10,13 +10,11 @@ notion = Client(auth=os.getenv('NOTION_API_SECRET'))
 database_id = os.getenv('NOTION_DATABASE_ID')
 goal_uuid = os.getenv('NOTION_GOAL_UUID')
 
-date = None if 'START_DATE' not in os.environ else os.environ['START_DATE']
+date = None if 'START_DATE' not in os.environ else datetime.strptime(
+    os.environ['START_DATE'], "%Y-%m-%d").isoformat()
 # get date from cli
 if len(sys.argv) > 1:
     date = sys.argv[1]
-
-date = datetime.strptime(date, "%Y-%m-%d").isoformat()
-
 
 def get_pages(next_cursor=None):
     global date
