@@ -1,5 +1,7 @@
-const goalSelect = document.getElementById("goal");
-const taskSelect = document.getElementById("task");
+const goalSearch = document.getElementById("goal-search");
+const goalList = document.getElementById("goal-list");
+const taskSearch = document.getElementById("task-search");
+const taskList = document.getElementById("task-list");
 const timer = document.getElementById("timer");
 
 // buttons
@@ -20,34 +22,67 @@ var currentTask = null;
 const fetchGoals = async () => {
   const res = await fetch("/api/goals");
   goals = await res.json();
-  goalSelect.innerHTML = goals
+  goalList.innerHTML = "";
+  goals
     .map((goal) => {
-      return `<option value="${goal.id}">${goal.name}</option>`;
+      const li = document.createElement("li");
+      li.dataset.id = goal.id;
+      li.innerHTML = goal.name;
+      li.onclick = async () => {
+        currentGoal = goal;
+        goalSearch.value = currentGoal.name;
+        await fetchTasks();
+      };
+      goalList.append(li);
     })
     .join("");
-  goalSelect.disabled = false;
-  currentGoal = goalSelect.value;
+  currentGoal = goals[0];
+  goalSearch.value = currentGoal.name;
   await fetchTasks();
 };
 
 const fetchTasks = async () => {
   if (!currentGoal) return;
-  taskSelect.disabled = true;
-  const res = await fetch(`/api/goals/${currentGoal}/tasks`);
+  const res = await fetch(`/api/goals/${currentGoal.id}/tasks`);
   tasks = await res.json();
-  taskSelect.innerHTML = tasks
+  taskList.innerHTML = "";
+  tasks
     .map((task) => {
-      return `<option value="${task.id}">${task.title}</option>`;
+      const li = document.createElement("li");
+      li.dataset.id = task.id;
+      li.innerHTML = task.title;
+      li.onclick = async () => {
+        currentTask = task;
+        taskSearch.value = currentTask.title;
+      };
+      taskList.append(li);
     })
     .join("");
-  taskSelect.disabled = false;
+  currentTask = tasks[0];
+  taskSearch.value = currentTask.title;
 };
 
-goalSelect.onchange = async () => {
-  currentGoal = goalSelect.value;
-  await fetchTasks();
+goalSearch.onkeyup = async () => {
+  goalList.innerHTML = "";
+  goals
+    .filter((goal) => {
+      const value = goalSearch.value.toLowerCase().trim();
+      if (!value) return true;
+      return goal.name.toLowerCase().includes(value);
+    })
+    .map((goal) => {
+      const li = document.createElement("li");
+      li.dataset.id = goal.id;
+      li.innerHTML = goal.name;
+      li.onclick = async () => {
+        currentGoal = goal;
+        goalSearch.value = currentGoal.name;
+        await fetchTasks();
+      };
+      goalList.append(li);
+    });
 };
-taskSelect.onchange = () => {
+taskSearch.onchange = () => {
   currentTask = taskSelect.value;
 };
 
