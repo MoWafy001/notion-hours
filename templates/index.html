@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notion Timer</title>
+    <script
+      src="{{ url_for('static', filename='js/index.js') }}"
+      defer
+    ></script>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+      }
+      select {
+        padding: 5px;
+        font-size: 16px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #fff;
+        padding: 5px 10px;
+        margin: 20px 0;
+        max-width: 200px;
+      }
+      #timer {
+        /* circle timer */
+        width: 200px;
+        height: 200px;
+        line-height: 200px;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 32px;
+        background-color: #fff;
+        box-shadow: 10px 0 10px rgba(0, 0, 0, 0.1);
+        /* animation: rotate 1s linear infinite; */
+      }
+      @keyframes rotate {
+        0% {
+          box-shadow: 10px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        25% {
+          box-shadow: 0 10px 10px rgba(255, 0, 0, 0.1);
+        }
+        50% {
+          box-shadow: -10px 0 10px rgba(0, 255, 0, 0.1);
+        }
+        75% {
+          box-shadow: 0 -10px 10px rgba(0, 0, 255, 0.1);
+        }
+        100% {
+          box-shadow: 10px 0 10px rgba(0, 0, 0, 0.1);
+        }
+      }
+      #controls {
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #fff;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- goal dropdown -->
+    <select id="goal" name="goal" disabled></select>
+    <!-- timer -->
+    <div id="timer">00:00</div>
+    <!-- task dropdown -->
+    <select id="task" name="task" disabled></select>
+    <!-- controls buttons -->
+    <div id="controls">
+      <button id="start" disabled>Start</button>
+      <button id="resume" style="display: none">Resume</button>
+      <button id="pause" style="display: none">Pause</button>
+      <button id="reset" style="display: none">Reset</button>
+      <button id="end" style="display: none">End</button>
+      <button id="delete" style="display: none">Delete</button>
+    </div>
+  </body>
+</html>

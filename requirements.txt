@@ -4,3 +4,4 @@ pillow==10.*
 python-dotenv==1.*
 requests==2.*
 seaborn==0.*
+Flask==3.*
