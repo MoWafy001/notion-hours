@@ -1,8 +1,13 @@
+from datetime import date, datetime
 import os
 from notion_client import Client
 from flask import Flask, render_template
 from dotenv import load_dotenv
+from dateutil import tz
+
 load_dotenv()
+
+current_time_zone = tz.tzlocal()
 
 notion = Client(auth=os.getenv('NOTION_API_SECRET'))
 tasks_database_id = os.getenv('NOTION_DATABASE_ID')
@@ -14,6 +19,27 @@ port = os.getenv('PORT', '5000')
 app = Flask(__name__)
 
 
+def parseTask(task):
+    date_start = None
+    date_end = None
+    date = task['properties']['when']['date']
+    if date:
+        date_start = date['start']
+        date_end = date['end']
+
+    return {
+        'id': task['id'],
+        'title': task['properties']['title']['title'][0]['plain_text'],
+        "status": task['properties']['status']['status']['name'],
+        'date_start': date_start,
+        'date_end': date_end,
+    }
+
+
+def getTask(task_id):
+    task = notion.pages.retrieve(task_id)
+    return parseTask(task)
+
 @app.get('/')
 def index():
     return render_template('index.html')
@@ -22,8 +48,23 @@ def index():
 @app.get('/api/goals')
 def listGoals():
     # list goals records from the goals database
-    goals = notion.databases.query(goals_database_id, filters=[
-        ])['results']
+    goals = notion.databases.query(goals_database_id, filter={
+        "or": [
+            {
+                "property": "Status",
+                "title": {
+                    "equals": "in progress"
+                }
+            },
+            {
+                "property": "Status",
+                "title": {
+                    "equals": "not started"
+                }
+            },
+        ]
+    },
+    )['results']
     parsed_goals = list(map(lambda goal: {
         'id': goal['id'],
         'name': goal['properties']['name']['title'][0]['plain_text'],
@@ -62,14 +103,132 @@ def listTasks(goal_id):
         }
     )
     tasks = response['results']
-    parsed_tasks = list(map(lambda task: {
-        'id': task['id'],
-        'title': task['properties']['title']['title'][0]['plain_text'],
-        'date': task['properties']['when']['date']['start'],
-        "status": task['properties']['status']['status']['name']
-    }, tasks))
+    parsed_tasks = []
+    for task in tasks:
+        date_start = None
+        date_end = None
+        date = task['properties']['when']['date']
+        if date:
+            date_start = date['start']
+            date_end = date['end']
+
+        parsed_tasks.append({
+            'id': task['id'],
+            'title': task['properties']['title']['title'][0]['plain_text'],
+            "status": task['properties']['status']['status']['name'],
+            'date_start': date_start,
+            'date_end': date_end,
+        })
     return parsed_tasks
 
+
+# set start date to now, and end date to none
+@app.post('/api/tasks/<task_id>/start')
+def startTask(task_id):
+    now = datetime.now(tz=current_time_zone)
+    now_iso = now.isoformat()
+    response = notion.pages.update(task_id, properties={
+        "status": {
+            "status": {
+                "name": "In progress"
+            }
+        },
+        "when": {
+            "date": {
+                "start": now_iso,
+                "end": None
+            }
+        }
+    })
+    return parseTask(response)
+
+
+# end the task and start a new duplicate task
+@app.post('/api/tasks/<task_id>/resume')
+def resumeTask(task_id):
+    task = getTask(task_id)
+    now = datetime.now(tz=current_time_zone)
+    now_iso = now.isoformat()
+    response = notion.pages.update(task_id, properties={
+        "status": {
+            "status": {
+                "name": "Done"
+            }
+        },
+        "when": {
+            "date": {
+                "start": task['date_start'],
+                "end": now_iso
+            }
+        }
+    })
+    response = notion.pages.create(
+        parent={"database_id": tasks_database_id},
+        properties={
+            "title": {
+                "title": [
+                    {
+                        "text": {
+                            "content": response['properties']['title']['title'][0]['plain_text']
+                        }
+                    }
+                ]
+            },
+            "Goal": {
+                "relation": [
+                    {
+                        "id": response['properties']['Goal']['relation'][0]['id']
+                    }
+                ]
+            },
+            "status": {
+                "status": {
+                    "name": "In progress"
+                }
+            },
+            "when": {
+                "date": {
+                    "start": now_iso,
+                    "end": None
+                }
+            }
+        }
+    )
+    return parseTask(response)
+
+# set the end date to now
+@app.post('/api/tasks/<task_id>/pause')
+def pauseTask(task_id):
+    task = getTask(task_id)
+    now = datetime.now(tz=current_time_zone)
+    now_iso = now.isoformat()
+    response = notion.pages.update(task_id, properties={
+        "when": {
+            "date": {
+                "start": task['date_start'],
+                "end": now_iso
+            }
+        }
+    })
+    return parseTask(response)
+
+# set the status to done
+@app.post('/api/tasks/<task_id>/done')
+def doneTask(task_id):
+    response = notion.pages.update(task_id, properties={
+        "status": {
+            "status": {
+                "name": "Done"
+            }
+        },
+    })
+    return parseTask(response)
+
+# archive the task
+@app.post('/api/tasks/<task_id>/delete')
+def deleteTask(task_id):
+    response = notion.pages.update(task_id, archived=True)
+    return parseTask(response)
 
 if __name__ == '__main__':
     app.run(port=int(port))

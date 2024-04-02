@@ -103,6 +103,19 @@
         background: #fff;
         cursor: pointer;
       }
+      #loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        font-size: 24px;
+      }
     </style>
   </head>
   <body>
@@ -126,14 +139,21 @@
       />
       <ul id="task-list"></ul>
     </div>
+    <!-- task info -->
+    <div id="task-info"></div>
     <!-- controls buttons -->
     <div id="controls">
-      <button id="start" disabled>Start</button>
+      <button id="start" style="display: none">Start</button>
       <button id="resume" style="display: none">Resume</button>
       <button id="pause" style="display: none">Pause</button>
       <button id="reset" style="display: none">Reset</button>
       <button id="end" style="display: none">End</button>
       <button id="delete" style="display: none">Delete</button>
+    </div>
+
+    <!-- loading overlay -->
+    <div id="loading-overlay">
+      <div>Loading...</div>
     </div>
   </body>
 </html>
