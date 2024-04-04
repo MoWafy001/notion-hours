@@ -26,8 +26,9 @@ def parseTask(task):
     if date:
         date_start = date['start']
         date_end = date['end']
-        duration = datetime.fromisoformat(
-            date_end) - datetime.fromisoformat(date_start)
+        if date_start and date_end:
+            duration = datetime.fromisoformat(
+                date_end) - datetime.fromisoformat(date_start)
 
     return {
         'id': task['id'],
