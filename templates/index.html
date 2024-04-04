@@ -23,7 +23,7 @@
         position: relative;
         display: inline-block;
         width: 200px;
-        margin: 20px 0;
+        margin: 10px 0;
       }
       .custom-dropdown:focus-within ul {
         display: block;
@@ -40,7 +40,7 @@
         background: #fff;
         cursor: pointer;
       }
-      ul {
+      .dropdown {
         position: absolute;
         width: 100%;
         max-height: 200px;
@@ -54,11 +54,11 @@
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
         display: none;
       }
-      li {
+      .dropdown li {
         padding: 10px;
         cursor: pointer;
       }
-      li:hover {
+      .dropdown li:hover {
         background-color: #f0f0f0;
       }
 
@@ -116,39 +116,181 @@
         color: #fff;
         font-size: 24px;
       }
+
+      aside {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 300px;
+        height: 100%;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: -5px 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      aside h2 {
+        margin-bottom: 10px;
+      }
+      aside ul {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        overflow-y: auto;
+        max-height: 100%;
+      }
+
+      aside li {
+        padding: 10px;
+        border-bottom: 1px solid #f0f0f0;
+      }
+
+      aside li:last-child {
+        border-bottom: none;
+      }
+
+      aside li:hover {
+        background-color: #f0f0f0;
+      }
+
+      #task-info {
+        margin: 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #fff;
+      }
+
+      #task-info h4 {
+        margin: 0;
+      }
+
+      #task-info p {
+        margin-bottom: 0;
+      }
+
+      #task-info button {
+        padding: 5px 10px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #fff;
+        cursor: pointer;
+      }
+
+      #task-info button:hover {
+        background-color: #f0f0f0;
+      }
+
+      #task-info button:active {
+        background-color: #e0e0e0;
+      }
+
+      #task-info button:focus {
+        outline: none;
+      }
+
+      .container {
+        display: flex;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+
+      aside {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .tdt-goal {
+        color: #ff3366; /* Pink color */
+      }
+      .tdt-title {
+        color: #66cc33; /* Lime green color */
+      }
+      .tdt-duration {
+        color: #3366ff; /* Blue color */
+      }
+
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #333;
+          color: #fff;
+        }
+        input,
+        .dropdown,
+        button,
+        #task-info {
+          background-color: #444;
+          color: #fff;
+        }
+        .dropdown li:hover {
+          background-color: #555;
+        }
+        aside {
+          background-color: #444;
+        }
+        aside li:hover {
+          background-color: #555;
+        }
+        #timer {
+          background-color: #444;
+        }
+        .tdt-goal {
+          color: #ff66a3; /* Pink color */
+        }
+        .tdt-title {
+          color: #66ff66; /* Lime green color */
+        }
+        .tdt-duration {
+          color: #66a3ff; /* Blue color */
+        }
+      }
     </style>
   </head>
   <body>
-    <!-- goal dropdown -->
-    <div class="custom-dropdown">
-      <input
-        type="text"
-        id="goal-search"
-        placeholder="Search or add custom item"
-      />
-      <ul id="goal-list"></ul>
-    </div>
-    <!-- timer -->
-    <div id="timer">00:00</div>
-    <!-- task dropdown -->
-    <div class="custom-dropdown">
-      <input
-        type="text"
-        id="task-search"
-        placeholder="Search or add custom item"
-      />
-      <ul id="task-list"></ul>
-    </div>
-    <!-- task info -->
-    <div id="task-info"></div>
-    <!-- controls buttons -->
-    <div id="controls">
-      <button id="start" style="display: none">Start</button>
-      <button id="resume" style="display: none">Resume</button>
-      <button id="pause" style="display: none">Pause</button>
-      <button id="reset" style="display: none">Reset</button>
-      <button id="end" style="display: none">End</button>
-      <button id="delete" style="display: none">Delete</button>
+    <div class="container">
+      <main>
+        <!-- goal dropdown -->
+        <div class="custom-dropdown">
+          <input
+            type="text"
+            id="goal-search"
+            placeholder="Search or add custom item"
+          />
+          <ul class="dropdown" id="goal-list"></ul>
+        </div>
+        <!-- timer -->
+        <div id="timer">00:00</div>
+        <!-- task dropdown -->
+        <div class="custom-dropdown">
+          <input
+            type="text"
+            id="task-search"
+            placeholder="Search or add custom item"
+          />
+          <ul class="dropdown" id="task-list"></ul>
+        </div>
+        <!-- task info -->
+        <div id="task-info"></div>
+        <!-- controls buttons -->
+        <div id="controls">
+          <button id="start" style="display: none">Start</button>
+          <button id="resume" style="display: none">Resume</button>
+          <button id="pause" style="display: none">Pause</button>
+          <button id="reset" style="display: none">Reset</button>
+          <button id="end" style="display: none">End</button>
+          <button id="delete" style="display: none">Delete</button>
+        </div>
+      </main>
+      <aside>
+        <h2>Tasks Done Today</h2>
+        <ul id="tasks-done-today-list"></ul>
+      </aside>
     </div>
 
     <!-- loading overlay -->

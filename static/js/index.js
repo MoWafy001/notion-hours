@@ -5,6 +5,7 @@ const taskList = document.getElementById("task-list");
 const timer = document.getElementById("timer");
 const loadingOverlay = document.getElementById("loading-overlay");
 const taskInfo = document.getElementById("task-info");
+const tasksDoneTodayList = document.getElementById("tasks-done-today-list");
 
 // buttons
 const startBtn = document.getElementById("start");
@@ -22,8 +23,23 @@ var currentTask = null;
 var time_start = null;
 var timerInterval = null;
 var time_diff_prefix = 0;
+var tasksDoneToday = [];
 
 // methods
+const secondsToDuration = (seconds) => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  const comps = [];
+  if (hours > 0) comps.push(`${hours}h`);
+  if (minutes > 0) comps.push(`${minutes}m`);
+  if (secs > 0) comps.push(`${secs}s`);
+
+  if (comps.length === 0) return "0s";
+  return comps.join(":");
+}
+
 const fetchGoals = async () => {
   loadingOverlay.style.display = "flex";
   const res = await fetch("/api/goals");
@@ -48,6 +64,29 @@ const fetchGoals = async () => {
   await fetchTasks();
 };
 
+const getTasksDoneToday = async () => {
+  const res = await fetch(`/api/tasks-done-today`);
+  tasksDoneToday = (await res.json()).reduce((acc, task) => {
+    const existing = acc.find((t) => t.title === task.title && t.goal === task.goal);
+    if (existing) {
+      existing.duration_secs += task.duration_secs;
+    } else {
+      acc.push(task);
+    } 
+    return acc;
+  }, []);
+  console.log(tasksDoneToday);
+  tasksDoneTodayList.innerHTML = "";
+  tasksDoneToday
+    .map((task) => {
+      const li = document.createElement("li");
+      const goal = goals.find((g) => g.id === task.goal);
+      li.innerHTML = `<span class="tdt-goal">${goal.name}</span> - <span class="tdt-title">${task.title}</span> - <span class="tdt-duration">${secondsToDuration(task.duration_secs)}</span>`;
+      tasksDoneTodayList.append(li);
+    })
+    .join("");
+}
+
 const fetchTasks = async () => {
   if (!currentGoal) return;
   loadingOverlay.style.display = "flex";
@@ -67,12 +106,12 @@ const fetchTasks = async () => {
     .join("");
   loadingOverlay.style.display = "none";
   await setTask(tasks[0]);
+  await getTasksDoneToday();
 };
 
 const setTask = async (task) => {
   currentTask = task;
   taskSearch.value = currentTask.title;
-  console.log(task);
   taskInfo.innerHTML = `
     <h4>${task.title}</h4>
     <p>status: ${task.status}</p>
@@ -172,7 +211,6 @@ const stopTimer = () => {
 const pauseTimer = () => {
   clearInterval(timerInterval);
   timer.style.animation = "";
-  time_diff_prefix += new Date() - time_start;
 };
 
 startBtn.onclick = async () => {
