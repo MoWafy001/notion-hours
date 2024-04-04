@@ -1,7 +1,7 @@
-from datetime import date, datetime
+from datetime import datetime
 import os
 from notion_client import Client
-from flask import Flask, render_template
+from flask import Flask, render_template, Response, request
 from dotenv import load_dotenv
 from dateutil import tz
 
@@ -75,6 +75,43 @@ def listGoals():
         'name': goal['properties']['name']['title'][0]['plain_text'],
     }, goals))
     return parsed_goals
+
+# create a new task
+
+
+@app.post('/api/goals/<goal_id>/tasks')
+def createTask(goal_id):
+    name = request.json['name']
+    if not name:
+        return Response('Name is required', status=400)
+
+    response = notion.pages.create(
+        parent={"database_id": tasks_database_id},
+        properties={
+            "title": {
+                "title": [
+                    {
+                        "text": {
+                            "content": name
+                        }
+                    }
+                ]
+            },
+            "Goal": {
+                "relation": [
+                    {
+                        "id": goal_id
+                    }
+                ]
+            },
+            "status": {
+                "status": {
+                    "name": "Not started"
+                }
+            }
+        }
+    )
+    return parseTask(response)
 
 
 # get done tasks today

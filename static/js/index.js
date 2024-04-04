@@ -30,7 +30,7 @@ const secondsToDuration = (seconds) => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
+
   const comps = [];
   if (hours > 0) comps.push(`${hours}h`);
   if (minutes > 0) comps.push(`${minutes}m`);
@@ -38,7 +38,7 @@ const secondsToDuration = (seconds) => {
 
   if (comps.length === 0) return "0s";
   return comps.join(":");
-}
+};
 
 const fetchGoals = async () => {
   loadingOverlay.style.display = "flex";
@@ -67,12 +67,14 @@ const fetchGoals = async () => {
 const getTasksDoneToday = async () => {
   const res = await fetch(`/api/tasks-done-today`);
   tasksDoneToday = (await res.json()).reduce((acc, task) => {
-    const existing = acc.find((t) => t.title === task.title && t.goal === task.goal);
+    const existing = acc.find(
+      (t) => t.title === task.title && t.goal === task.goal
+    );
     if (existing) {
       existing.duration_secs += task.duration_secs;
     } else {
       acc.push(task);
-    } 
+    }
     return acc;
   }, []);
   console.log(tasksDoneToday);
@@ -81,11 +83,17 @@ const getTasksDoneToday = async () => {
     .map((task) => {
       const li = document.createElement("li");
       const goal = goals.find((g) => g.id === task.goal);
-      li.innerHTML = `<span class="tdt-goal">${goal.name}</span> - <span class="tdt-title">${task.title}</span> - <span class="tdt-duration">${secondsToDuration(task.duration_secs)}</span>`;
+      li.innerHTML = `<span class="tdt-goal">${
+        goal.name
+      }</span> - <span class="tdt-title">${
+        task.title
+      }</span> - <span class="tdt-duration">${secondsToDuration(
+        task.duration_secs
+      )}</span>`;
       tasksDoneTodayList.append(li);
     })
     .join("");
-}
+};
 
 const fetchTasks = async () => {
   if (!currentGoal) return;
@@ -186,6 +194,33 @@ taskSearch.onkeyup = async () => {
       };
       taskList.append(li);
     });
+
+
+  // if goalList is empty, add new button
+  if (taskList.innerHTML === "") {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    const name = taskSearch.value.trim();
+    if (!name) return;
+    btn.innerHTML = `Create ${name}`;
+    btn.style.width = "100%";
+    btn.onclick = async () => {
+      const name = taskSearch.value.trim();
+      if (!name) return alert("Please enter a name for the task");
+      const res = await fetch(`/api/goals/${currentGoal.id}/tasks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name }),
+      });
+      const task = await res.json();
+      await fetchTasks();
+      await setTask(task);
+    };
+    li.append(btn);
+    taskList.append(li);
+  }
 };
 
 fetchGoals();
@@ -283,7 +318,7 @@ resetBtn.onclick = async () => {
   resetBtn.style.display = "none";
   endBtn.style.display = "none";
   deleteBtn.style.display = "block";
-}
+};
 
 endBtn.onclick = async () => {
   loadingOverlay.style.display = "flex";
