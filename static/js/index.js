@@ -179,25 +179,23 @@ goalSearch.onkeyup = async () => {
 };
 taskSearch.onkeyup = async () => {
   taskList.innerHTML = "";
-  tasks
-    .filter((task) => {
-      const value = taskSearch.value.toLowerCase().trim();
-      if (!value) return true;
-      return task.title.toLowerCase().includes(value);
-    })
-    .map((task) => {
-      const li = document.createElement("li");
-      li.dataset.id = task.id;
-      li.innerHTML = task.title;
-      li.onclick = async () => {
-        await setTask(task);
-      };
-      taskList.append(li);
-    });
-
+  filteredTasks = tasks.filter((task) => {
+    const value = taskSearch.value.toLowerCase().trim();
+    if (!value) return true;
+    return task.title.toLowerCase().includes(value);
+  });
+  filteredTasks.map((task) => {
+    const li = document.createElement("li");
+    li.dataset.id = task.id;
+    li.innerHTML = task.title;
+    li.onclick = async () => {
+      await setTask(task);
+    };
+    taskList.append(li);
+  });
 
   // if goalList is empty, add new button
-  if (taskList.innerHTML === "") {
+  if (!filteredTasks.find((t) => t.title === taskSearch.value.trim())) {
     const li = document.createElement("li");
     const btn = document.createElement("button");
     const name = taskSearch.value.trim();
@@ -219,7 +217,7 @@ taskSearch.onkeyup = async () => {
       await setTask(task);
     };
     li.append(btn);
-    taskList.append(li);
+    taskList.prepend(li);
   }
 };
 
