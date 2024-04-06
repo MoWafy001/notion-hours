@@ -29,14 +29,12 @@ var tasksDoneToday = [];
 const secondsToDuration = (seconds) => {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
 
   const comps = [];
   if (hours > 0) comps.push(`${hours}h`);
   if (minutes > 0) comps.push(`${minutes}m`);
-  if (secs > 0) comps.push(`${secs}s`);
 
-  if (comps.length === 0) return "0s";
+  if (comps.length === 0) return "0m";
   return comps.join(":");
 };
 
@@ -77,19 +75,22 @@ const getTasksDoneToday = async () => {
     }
     return acc;
   }, []);
-  console.log(tasksDoneToday);
   tasksDoneTodayList.innerHTML = "";
   tasksDoneToday
     .map((task) => {
       const li = document.createElement("li");
       const goal = goals.find((g) => g.id === task.goal);
-      li.innerHTML = `<span class="tdt-goal">${
+      li.innerHTML = `
+        <span class="tdt-goal">${
         goal.name
       }</span> - <span class="tdt-title">${
         task.title
       }</span> - <span class="tdt-duration">${secondsToDuration(
         task.duration_secs
-      )}</span>`;
+      )}</span> - <span class="tdt-goal">${
+        task.status
+      }</span>
+        `;
       tasksDoneTodayList.append(li);
     })
     .join("");

@@ -115,7 +115,7 @@ def createTask(goal_id):
     return parseTask(response)
 
 
-# get done tasks today
+# get tasks done or inprogress today
 @app.get('/api/tasks-done-today')
 def listTasksDoneToday():
     # list tasks records from the tasks database
@@ -126,10 +126,20 @@ def listTasksDoneToday():
 
     filters = [
         {
-            "property": "status",
-            "status": {
-                "equals": "Done"
-            }
+            "or": [
+                {
+                    "property": "status",
+                    "status": {
+                        "equals": "Done"
+                    }
+                },
+                {
+                    "property": "status",
+                    "status": {
+                        "equals": "In progress"
+                    }
+                },
+            ]
         },
         {
             "property": "when",
