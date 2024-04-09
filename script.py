@@ -4,17 +4,17 @@ from datetime import datetime
 import csv
 import sys
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 notion = Client(auth=os.getenv('NOTION_API_SECRET'))
 database_id = os.getenv('NOTION_DATABASE_ID')
 goal_uuid = os.getenv('NOTION_GOAL_UUID')
 
-date = None if 'START_DATE' not in os.environ else datetime.strptime(
-    os.environ['START_DATE'], "%Y-%m-%d").isoformat()
+date = None if 'START_DATE' not in os.environ else datetime.strptime(os.getenv('START_DATE'), "%Y-%m-%d").isoformat()
 # get date from cli
 if len(sys.argv) > 1:
     date = sys.argv[1]
+    date = datetime.strptime(date, "%Y-%m-%d").isoformat()
 
 def get_pages(next_cursor=None):
     global date
@@ -91,6 +91,16 @@ def group_by_date(pages):
                 "tasks": page["title"],
                 "duration": page["duration"]
             }
+            
+    # remove duplicate task names
+    for date, group in grouped_pages.items():
+        tasks = group["tasks"].split(" - ")
+        tasks = list(set(tasks))
+        grouped_pages[date] = {
+            "tasks": " - ".join(tasks),
+            "duration": group["duration"]
+        }
+            
     return sorted(grouped_pages.items(), key=lambda x: x[0])
 
 

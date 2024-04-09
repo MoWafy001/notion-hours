@@ -54,23 +54,7 @@ def index():
 @app.get('/api/goals')
 def listGoals():
     # list goals records from the goals database
-    goals = notion.databases.query(goals_database_id, filter={
-        "or": [
-            {
-                "property": "Status",
-                "title": {
-                    "equals": "in progress"
-                }
-            },
-            {
-                "property": "Status",
-                "title": {
-                    "equals": "not started"
-                }
-            },
-        ]
-    },
-    )['results']
+    goals = notion.databases.query(goals_database_id)['results']
     parsed_goals = list(map(lambda goal: {
         'id': goal['id'],
         'name': goal['properties']['name']['title'][0]['plain_text'],
