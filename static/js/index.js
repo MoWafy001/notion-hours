@@ -6,6 +6,7 @@ const timer = document.getElementById("timer");
 const loadingOverlay = document.getElementById("loading-overlay");
 const taskInfo = document.getElementById("task-info");
 const tasksDoneTodayList = document.getElementById("tasks-done-today-list");
+const goalsDoneTodayList = document.getElementById("goals-done-today-list");
 
 // buttons
 const startBtn = document.getElementById("start");
@@ -76,6 +77,7 @@ const getTasksDoneToday = async () => {
     return acc;
   }, []);
   tasksDoneTodayList.innerHTML = "";
+  goalsDoneTodayList.innerHTML = "";
   tasksDoneToday
     .map((task) => {
       const li = document.createElement("li");
@@ -92,6 +94,22 @@ const getTasksDoneToday = async () => {
       }</span>
         `;
       tasksDoneTodayList.append(li);
+    })
+    .join("");
+  goals
+    .map((goal) => {
+      const li = document.createElement("li");
+      const tasks = tasksDoneToday.filter((t) => t.goal === goal.id);
+      const duration_secs = tasks.reduce((acc, task) => {
+        return acc + task.duration_secs;
+      }, 0);
+      if(duration_secs === 0) return;
+      li.innerHTML = `
+        <span class="tdt-goal">${goal.name}</span> - <span class="tdt-duration">${secondsToDuration(
+        duration_secs
+      )}</span>
+        `;
+      goalsDoneTodayList.append(li);
     })
     .join("");
 };
