@@ -121,13 +121,32 @@
         position: fixed;
         top: 0;
         right: 0;
-        max-width: 300px;
-        min-width: 200px;
-        width: 20%;
         height: 100%;
         padding: 20px;
         background-color: #fff;
         box-shadow: -5px 0 10px rgba(0, 0, 0, 0.1);
+        transition: 0.5s;
+      }
+      
+      #aside-toggle{
+        position: unset;
+        top: unset;
+        left: unset;
+        transform: unset;
+        z-index: unset;
+        font-size: 24px;
+        cursor: pointer;
+        font-family: Arial, sans-serif;
+      }
+
+      aside.closed {
+        transform: translateX(100%);
+      }
+
+      aside.open {
+        width: 300px;
+        max-width: 20%;
+        transform: translateX(0%);
       }
 
       aside h2 {
@@ -160,6 +179,7 @@
         border: 1px solid #ccc;
         border-radius: 5px;
         background: #fff;
+        max-width: 300px;
       }
 
       #task-info h4 {
@@ -289,7 +309,10 @@
           <button id="delete" style="display: none">Delete</button>
         </div>
       </main>
-      <aside>
+      <aside class="open">
+        <i id="aside-toggle" style="cursor: pointer" onclick="toggleAside()">
+          >
+        </i>
         <h2>Tasks Done Today</h2>
         <ul id="goals-done-today-list"></ul>
         <ul id="tasks-done-today-list"></ul>
@@ -300,5 +323,27 @@
     <div id="loading-overlay">
       <div>Loading...</div>
     </div>
+
+    <script>
+      const toggleAside = () => {
+        document.querySelector('aside').classList.toggle('closed');
+        document.querySelector('aside').classList.toggle('open');
+        if(document.querySelector('aside').classList.contains('closed')) {
+          document.querySelector('#aside-toggle').innerText = '<';
+          document.querySelector('#aside-toggle').style.position= "fixed";
+          document.querySelector('#aside-toggle').style.top= "50%";
+          document.querySelector('#aside-toggle').style.left= "-25px";
+          document.querySelector('#aside-toggle').style.transform= "translateY(-50%)";
+          document.querySelector('#aside-toggle').style.zIndex= "1000";
+        }else{
+          document.querySelector('#aside-toggle').style.position= "unset";
+          document.querySelector('#aside-toggle').style.top= "unset";
+          document.querySelector('#aside-toggle').style.left= "unset";
+          document.querySelector('#aside-toggle').style.transform= "unset";
+          document.querySelector('#aside-toggle').style.zIndex= "unset";
+          document.querySelector('#aside-toggle').innerText = '>';
+        }
+      };
+    </script>
   </body>
 </html>
