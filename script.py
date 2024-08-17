@@ -22,22 +22,28 @@ def get_pages(next_cursor=None):
     filters = [
 
         {
-            "property": "Goal",
+            "property": "project",
             "relation": {
                         "contains": goal_uuid
             }
         },
         {
-            "property": "when",
+            "property": "formatted start & end",
             "date": {
                         "on_or_before": datetime.now().isoformat()
+            }
+        },
+        {
+            "property": "Status",
+            "status": {
+                "equals": "Done"
             }
         }
     ]
 
     if date:
         filters.append({
-            "property": "when",
+            "property": "formatted start & end",
             "date": {
                 "on_or_after": date
             }
@@ -60,13 +66,13 @@ def get_pages(next_cursor=None):
 def parse_pages(pages):
     parsed_pages = []
     for page in pages:
-        title = page["properties"]["title"]["title"][0]["plain_text"]
-        date = page["properties"]["when"]["date"]["start"]
-        duration = float(page["properties"]["Duration"]
-                         ["formula"]["string"].split(" ")[0].strip())
+        title = page["properties"]["name"]["title"][-1]["plain_text"]
+        date = page["properties"]["formatted start & end"]['formula']['date']['start']
+        date_end = page["properties"]["formatted start & end"]['formula']['date']['end']
 
-        # parsed date YYYY-MM-DD
-        parsed_date = date.split("T")[0]
+        # parsed date 2024-05-18T17:08:00.000+03:00 2024-05-18T20:08:00.000+03:00
+        parsed_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d")
+        duration = round((datetime.strptime(date_end, "%Y-%m-%dT%H:%M:%S.%f%z") - datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z")).total_seconds() / 3600, 2)
 
         parsed_page = {
             "title": title,
@@ -95,9 +101,12 @@ def group_by_date(pages):
     # remove duplicate task names
     for date, group in grouped_pages.items():
         tasks = group["tasks"].split(" - ")
+        test_tasks = list(filter(lambda x: x[:4].lower().strip().startswith("test"), tasks))
+        tasks = list(filter(lambda x: x[:4].lower().strip().startswith("test") == False, tasks))
         tasks = list(set(tasks))
         grouped_pages[date] = {
-            "tasks": " - ".join(tasks),
+            "tasks": " - ".join(task),
+            "test_tasks": " - ".join(test_tasks),
             "duration": group["duration"]
         }
             
@@ -106,13 +115,13 @@ def group_by_date(pages):
 
 def export_to_csv(grouped_pages):
     with open('out.csv', mode='w') as csv_file:
-        fieldnames = ['Date', 'Duration', 'Tasks']
+        fieldnames = ['Date', 'Duration', 'Tasks', 'Test Tasks']
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
         writer.writeheader()
         for date, group in grouped_pages:
             writer.writerow(
-                {'Date': date, 'Duration': group['duration'], 'Tasks': group['tasks']})
+                {'Date': date, 'Duration': group['duration'], 'Tasks': group['tasks'], 'Test Tasks': group['test_tasks']})
 
 
 print("getting pages")
