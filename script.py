@@ -22,9 +22,13 @@ def get_pages(next_cursor=None):
     filters = [
 
         {
-            "property": "project",
-            "relation": {
-                        "contains": goal_uuid
+            "property": "project tags",
+            "rollup": {
+                "any": {
+                    "multi_select": {
+                        "contains": "Accountant"
+                    }
+                }
             }
         },
         {
@@ -105,7 +109,7 @@ def group_by_date(pages):
         tasks = list(filter(lambda x: x[:4].lower().strip().startswith("test") == False, tasks))
         tasks = list(set(tasks))
         grouped_pages[date] = {
-            "tasks": " - ".join(task),
+            "tasks": " - ".join(tasks),
             "test_tasks": " - ".join(test_tasks),
             "duration": group["duration"]
         }
