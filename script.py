@@ -32,7 +32,7 @@ def get_pages(next_cursor=None):
             }
         },
         {
-            "property": "formatted start & end",
+            "property": "started at",
             "date": {
                         "on_or_before": datetime.now().isoformat()
             }
@@ -47,7 +47,7 @@ def get_pages(next_cursor=None):
 
     if date:
         filters.append({
-            "property": "formatted start & end",
+            "property": "started at",
             "date": {
                 "on_or_after": date
             }
@@ -71,8 +71,8 @@ def parse_pages(pages):
     parsed_pages = []
     for page in pages:
         title = page["properties"]["name"]["title"][-1]["plain_text"]
-        date = page["properties"]["formatted start & end"]['formula']['date']['start']
-        date_end = page["properties"]["formatted start & end"]['formula']['date']['end']
+        date = page["properties"]["started at"]['date']['start']
+        date_end = page["properties"]["ended at"]['date']['start']
 
         # parsed date 2024-05-18T17:08:00.000+03:00 2024-05-18T20:08:00.000+03:00
         parsed_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z").strftime("%Y-%m-%d")
@@ -104,7 +104,7 @@ def group_by_date(pages):
             
     # remove duplicate task names
     for date, group in grouped_pages.items():
-        tasks = group["tasks"].split(" - ")
+        tasks = group["tasks"].replace(" | "," - ").split(" - ")
         test_tasks = list(filter(lambda x: x[:4].lower().strip().startswith("test"), tasks))
         tasks = list(filter(lambda x: x[:4].lower().strip().startswith("test") == False, tasks))
         tasks = list(set(tasks))
