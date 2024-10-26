@@ -28,10 +28,11 @@ def update_timesheet(_gc):
     # Open a sheet from a spreadsheet in one go
     sh = gc.open("Timesheet - Wafy").sheet1
     start_cell = sh.find(start_date, None, 1)
-    start_row = start_cell.row
+    start_row = start_cell.row + 1
 
     print("start date:", start_date)
-    print(f"Updating from row {start_row}, {start_cell.value}")
+    print(f"Updating from row {start_row}, after {start_cell.value}")
+    rows = rows[1:]
     print("rows:", rows)
     print(rows[0])
     print(rows[0][0])
