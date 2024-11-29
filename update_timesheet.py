@@ -38,7 +38,7 @@ def update_timesheet(_gc):
     print(rows[0][0])
 
     # update the sheet
-    sh.update(rows, f"A{start_row}:D{start_row + len(rows) - -1}", raw=False)
+    sh.update(rows, f"A{start_row}:D{start_row + len(rows) - 1}", raw=False)
     print(f"Updated to row A{start_row}:D{start_row + len(rows) - 1}")
 
 

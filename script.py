@@ -7,10 +7,10 @@ from dotenv import load_dotenv
 
 load_dotenv(override=True)
 
+
 def get_data(start_date):
     notion = Client(auth=os.getenv("NOTION_API_SECRET"))
     database_id = os.getenv("NOTION_DATABASE_ID")
-    goal_uuid = os.getenv("NOTION_GOAL_UUID")
 
     date = (
         None
@@ -27,18 +27,18 @@ def get_data(start_date):
     def get_pages(next_cursor=None):
         filters = [
             {
-                "property": "project tags",
-                "rollup": {"any": {"multi_select": {"contains": "Accountant"}}},
+                "property": "Tags",
+                "rollup": {"any": {"multi_select": {"contains": "Accounting Project"}}},
             },
             {
-                "property": "started at",
+                "property": "Started At",
                 "date": {"on_or_before": datetime.now().isoformat()},
             },
-            {"property": "Status", "status": {"equals": "Done"}},
+            {"property": "Ended At", "date": {"is_not_empty": True}},
         ]
 
         if date:
-            filters.append({"property": "started at", "date": {"on_or_after": date}})
+            filters.append({"property": "Started At", "date": {"on_or_after": date}})
 
         response = notion.databases.query(
             database_id, start_cursor=next_cursor, filter={"and": filters}
@@ -49,13 +49,16 @@ def get_data(start_date):
             pages += get_pages(next_cursor)
         return pages
 
-
     def parse_pages(pages):
         parsed_pages = []
         for page in pages:
-            title = page["properties"]["name"]["title"][-1]["plain_text"]
-            date = page["properties"]["started at"]["date"]["start"]
-            date_end = page["properties"]["ended at"]["date"]["start"]
+            descriptionArray = page["properties"]["Description"]["title"]
+            if len(descriptionArray) == 0:
+                title = ""
+            else:
+                title = page["properties"]["Description"]["title"][-1]["plain_text"]
+            date = page["properties"]["Started At"]["date"]["start"]
+            date_end = page["properties"]["Ended At"]["date"]["start"]
 
             # parsed date 2024-05-18T17:08:00.000+03:00 2024-05-18T20:08:00.000+03:00
             parsed_date = datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.%f%z").strftime(
@@ -93,11 +96,12 @@ def get_data(start_date):
         # remove duplicate task names
         for date, group in grouped_pages.items():
             tasks = group["tasks"].replace(" | ", " - ").split(" - ")
+            tasks = list(filter(lambda x: x.strip() != "", tasks))
             test_tasks = list(
-                filter(lambda x: x[:4].lower().strip().startswith("test"), tasks)
+                filter(lambda x: "test" in x.lower().strip(), tasks)
             )
             tasks = list(
-                filter(lambda x: x[:4].lower().strip().startswith("test") == False, tasks)
+                filter(lambda x: "test" not in x.lower().strip(), tasks)
             )
             tasks = list(set(tasks))
             grouped_pages[date] = {
