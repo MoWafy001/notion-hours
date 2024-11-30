@@ -1,6 +1,7 @@
 import gspread
 import csv
 import datetime
+import re
 
 
 def update_timesheet(_gc):
@@ -21,18 +22,22 @@ def update_timesheet(_gc):
         return row
 
     rows = list(map(formatRow, rows))
-    start_date = rows[0][0]
-
     gc = gspread.oauth() if not _gc else _gc
 
     # Open a sheet from a spreadsheet in one go
     sh = gc.open("Timesheet - Wafy").sheet1
-    start_cell = sh.find(start_date, None, 1)
-    start_row = start_cell.row + 1
 
-    print("start date:", start_date)
-    print(f"Updating from row {start_row}, after {start_cell.value}")
-    rows = rows[1:]
+    # first date in csv
+    csv_start_date = rows[0][0]
+    col_dates = sh.col_values(1)
+    last_sheet_date = col_dates[-1]
+
+    if csv_start_date == last_sheet_date:
+        start_row = len(col_dates)
+        rows = rows[1:]
+    else:
+        start_row = len(col_dates) + 1
+
     print("rows:", rows)
     print(rows[0])
     print(rows[0][0])

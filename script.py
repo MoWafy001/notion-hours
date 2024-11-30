@@ -27,8 +27,8 @@ def get_data(start_date):
     def get_pages(next_cursor=None):
         filters = [
             {
-                "property": "Tags",
-                "rollup": {"any": {"multi_select": {"contains": "Accounting Project"}}},
+                "property": "Tag",
+                "rollup": {"any": {"select": {"equals": "Accounting Project"}}},
             },
             {
                 "property": "Started At",
@@ -139,6 +139,8 @@ def get_data(start_date):
     print("exporting to csv")
     export_to_csv(grouped_pages)
     print("CSV exported")
+    for date, group in grouped_pages:
+        print(date, group["duration"], group["tasks"], group["test_tasks"])
 
 
 if __name__ == "__main__":
