@@ -1,7 +1,4 @@
-matplotlib==3.*
-numpy==1.*
-pillow==10.*
-python-dotenv==1.*
-requests==2.*
-seaborn==0.*
-Flask==3.*
+google-auth
+google-auth-oauthlib
+gspread
+gspread-formatting
