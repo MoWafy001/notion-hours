@@ -1,13 +1,8 @@
-from pprint import pprint
-
 ACCEPTABLE_BLOCK_TYPES = [
     "paragraph",
     "heading_1",
     "heading_2",
     "heading_3",
-    "heading_4",
-    "heading_5",
-    "heading_6",
     "bulleted_list_item",
     "numbered_list_item",
     "to_do",
@@ -16,12 +11,9 @@ ACCEPTABLE_BLOCK_TYPES = [
 
 DEFAULT_FONT_SIZE = 10
 HEADINGS_FONT_SIZE_MAP = {
-    "heading_1": 20,
-    "heading_2": 18,
-    "heading_3": 16,
-    "heading_4": 14,
-    "heading_5": 12,
-    "heading_6": 10,
+    "heading_1": 13,
+    "heading_2": 12,
+    "heading_3": 11,
 }
 
 
@@ -52,16 +44,34 @@ def extract_page_content(notion_client, page_id):
         else:
             rich_text = [rich_text]
 
+        # if to-do, the first rich_text to include the checked status
+        if block_type == "to_do":
+            is_checked = block[block_type]["checked"]
+            rich_text[0]["plain_text"] = (
+                "☑ " if is_checked else "☐ "
+            ) + rich_text[0]["plain_text"]
+
+        # if bulleted_list_item, the first rich_text to include the bullet
+        if block_type == "bulleted_list_item":
+            rich_text[0]["plain_text"] = "• " + rich_text[0]["plain_text"]
+
+        # if numbered_list_item, the first rich_text to include the number
+        if block_type == "numbered_list_item":
+            rich_text[0]["plain_text"] = (
+                f"{block[block_type]['number']}. " + rich_text[0]["plain_text"]
+            )
+
         plain_text = "".join([text["plain_text"] for text in rich_text])
         segments = []
         for segment in rich_text:
             annotation = segment.get("annotations", {})
             href = segment.get("href", None)
+            is_heading = block_type.startswith("heading")
             segments.append(
                 {
                     "plain_text": segment["plain_text"],
                     "textFormat": {
-                        "bold": annotation.get("bold", False),
+                        "bold": is_heading or annotation.get("bold", False),
                         "italic": annotation.get("italic", False),
                         "underline": annotation.get("underline", False),
                         "strikethrough": annotation.get("strikethrough", False),

@@ -1,4 +1,5 @@
 from gspread_formatting import batch_updater, TextFormatRun, TextFormat, set_text_format_runs
+from pprint import pprint
 
 
 def update_timesheet(sh, groups: list):
@@ -16,9 +17,9 @@ def update_timesheet(sh, groups: list):
     def get_text_format_runs(tasks):
         text_format_runs = []
 
+        start_index = 0
         for task in tasks:
-            start_index = 0
-            for segment in task["segments"]:
+            for segIndex, segment in enumerate(task["segments"]):
                 format_run = TextFormatRun(
                     startIndex=start_index,
                     format=TextFormat(
@@ -26,7 +27,7 @@ def update_timesheet(sh, groups: list):
                     ),
                 )
                 text_format_runs.append(format_run)
-                start_index += len(segment["plain_text"])
+                start_index += len(segment["plain_text"]) + 1
 
         return text_format_runs
 
@@ -48,15 +49,17 @@ def update_timesheet(sh, groups: list):
     sh.update(plain_rows, f"A{start_row}:D{start_row + len(plain_rows) - 1}", raw=False)
 
     for index, group in enumerate(groups):
-        set_text_format_runs(
-            sh,
-            f"C{start_row + index}",
-            get_text_format_runs(group["tasks"]),
-        )
-        set_text_format_runs(
-            sh,
-            f"D{start_row + index}",
-            get_text_format_runs(group["test_tasks"]),
-        )
+        if group["tasks"]:
+            set_text_format_runs(
+                sh,
+                f"C{start_row + index}",
+                get_text_format_runs(group["tasks"]),
+            )
+        if group["test_tasks"]:
+            set_text_format_runs(
+                sh,
+                f"D{start_row + index}",
+                get_text_format_runs(group["test_tasks"]),
+            )
 
     print(f"Updated to row A{start_row}:D{start_row + len(plain_rows) - 1}")
