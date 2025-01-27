@@ -13,6 +13,7 @@ if __name__ == "__main__":
     load_dotenv(override=True)
     NOTION_API_SECRET = os.getenv("NOTION_API_SECRET")
     NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
+    PROJECT_ID = os.getenv("PROJECT_ID")
     SHEET_NAME = "Timesheet - Wafy"
     START_DATE = os.getenv("START_DATE")
 
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     date = datetime.strptime(date, "%Y-%m-%d").isoformat()
 
     # get pages and update timesheet
-    pages = get_pages(notion, NOTION_DATABASE_ID, date)
+    pages = get_pages(notion, NOTION_DATABASE_ID, PROJECT_ID, date)
     parsed_pages = parse_pages(notion, pages)
     grouped_pages = group_pages_by_date(parsed_pages)
     update_timesheet(sh, grouped_pages)
