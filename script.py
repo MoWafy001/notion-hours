@@ -4,7 +4,7 @@ import gspread
 from datetime import datetime
 import sys
 from dotenv import load_dotenv
-from utils import parse_pages, get_pages, group_pages_by_date, update_timesheet
+from utils import parse_sessions_pages, get_sessions_pages, group_sessions_by_date, update_timesheet
 import re
 
 
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     NOTION_API_SECRET = os.getenv("NOTION_API_SECRET")
     NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
     PROJECT_ID = os.getenv("PROJECT_ID")
-    SHEET_NAME = "Timesheet - Wafy"
+    SHEET_NAME = "Wafy - Timesheet"
     START_DATE = os.getenv("START_DATE")
 
     # initialize the clients
@@ -37,7 +37,7 @@ if __name__ == "__main__":
     date = datetime.strptime(date, "%Y-%m-%d").isoformat()
 
     # get pages and update timesheet
-    pages = get_pages(notion, NOTION_DATABASE_ID, PROJECT_ID, date)
-    parsed_pages = parse_pages(notion, pages)
-    grouped_pages = group_pages_by_date(parsed_pages)
-    update_timesheet(sh, grouped_pages)
+    sessions_pages = get_sessions_pages(notion, NOTION_DATABASE_ID, PROJECT_ID, date)
+    parsed_sessions_pages = parse_sessions_pages(notion, sessions_pages)
+    days = group_sessions_by_date(parsed_sessions_pages)
+    update_timesheet(sh, days)

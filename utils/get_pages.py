@@ -1,16 +1,14 @@
 from datetime import datetime
 
 
-def get_pages(notion_client, database_id, project_id, date, next_cursor=None):
+def get_sessions_pages(notion_client, database_id, project_id, date, next_cursor=None):
     print("Getting pages...", project_id, date)
     filters = [
         {
             "property": "Project",
-            "rollup": {"any": {
-                "relation": {
-                    "contains": project_id,
-                },
-            }},
+            "relation": {
+                "contains": project_id,
+            },
         },
         {
             "property": "Started At",
@@ -28,6 +26,6 @@ def get_pages(notion_client, database_id, project_id, date, next_cursor=None):
     pages = response["results"]
     next_cursor = response.get("next_cursor")
     if next_cursor:
-        pages += get_pages(notion_client, database_id, project_id, date, next_cursor)
+        pages += get_sessions_pages(notion_client, database_id, project_id, date, next_cursor)
         
     return pages
